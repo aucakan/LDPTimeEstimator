@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ETE</title>
+  <style>
+    :root {
+      --bg: #1e1e1e;
+      --card: #2c2c2c;
+      --accent: #4caf50;
+      --text: #e0e0e0;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, sans-serif;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    .perch {
+      background: var(--card);
+      padding: 2rem;
+      border-radius: .75rem;
+      box-shadow: 0 0 10px rgba(0,0,0,.6);
+      width: 500px;
+      margin: auto 0;
+    }
+    .perch h1 {
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+    .perch label {
+      display: block;
+      margin-bottom: .5rem;
+      font-size: .9rem;
+      color: var(--text);
+    }
+    .perch input {
+      width: 100%;
+      padding: .6rem;
+      font-size: 1rem;
+      border: 1px solid #555;
+      border-radius: .4rem;
+      background: #222;
+      color: var(--text);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .total {
+      background: var(--accent);
+      padding: .8rem;
+      border-radius: .4rem;
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+    .protocol {
+      background: #333;
+      padding: 1rem;
+      margin-bottom: .8rem;
+      border-radius: .4rem;
+    }
+    .protocol h3 {
+      margin-bottom: .5rem;
+      font-size: 1.1rem;
+    }
+    .protocol p {
+      font-size: .85rem;
+      margin: .2rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="perch">
+    <h1>Execution Time Estimation</h1>
+    <label for="domainSize">Domain Size</label>
+    <input type="number" id="domainSize" value="2880" min="1">
+    <label for="trials">Number of Trials</label>
+    <input type="number" id="trials" value="1" min="1">
+    <div class="total" id="totalTime">Total Time: 0 seconds</div>
+    <div id="results"></div>
+    <div class="protocol">
+        <h3>Experimental Setup</h3>
+        <p><strong>CPU:</strong> Intel Core i5-11300H @ 3.10 GHz</p>
+        <p><strong>RAM:</strong> 40 GB DDR4 3200 MHz</p>
+        <p><strong>GPU:</strong> NVIDIA GeForce RTX 3050 4 GB</p>
+        <p><strong>Storage:</strong> 1 TB SSD</p>
+        <p><strong>System:</strong> Windows 64-bit, x64-based processor</p>
+    </div>
+
+  </div>
+  <script>
+    const baseTimes = { GRR: 2.70, SS: 21.32, BLH: 91.54, OLH: 82.96, RAPPOR: 325.83, OUE: 320.5 };
+    const domainInput = document.getElementById('domainSize');
+    const trialsInput = document.getElementById('trials');
+    const resultsDiv = document.getElementById('results');
+    const totalDiv = document.getElementById('totalTime');
+
+    function formatDuration(sec) {
+      const s = Math.round(sec);
+      if (s >= 86400) {
+        const days = Math.floor(s / 86400);
+        const hours = Math.floor((s % 86400) / 3600);
+        return hours ? `${days} days ${hours} hours` : `${days} days`;
+      } else if (s >= 3600) {
+        const hours = Math.floor(s / 3600);
+        const minutes = Math.floor((s % 3600) / 60);
+        return minutes ? `${hours} hours ${minutes} minutes` : `${hours} hours`;
+      } else if (s >= 60) {
+        const minutes = Math.floor(s / 60);
+        const seconds = s % 60;
+        return seconds ? `${minutes} minutes ${seconds} seconds` : `${minutes} minutes`;
+      } else {
+        return `${s} seconds`;
+      }
+    }
+
+    function update() {
+      const ds = Number(domainInput.value) || 0;
+      const trials = Number(trialsInput.value) || 0;
+      resultsDiv.innerHTML = '';
+      let totalSec = 0;
+      Object.entries(baseTimes).forEach(([name, base]) => {
+        const timeSec = base * ds / 2880;
+        totalSec += timeSec * trials;
+        const card = document.createElement('div');
+        card.className = 'protocol';
+        card.innerHTML = `
+          <h3>${name}</h3>
+          <p>${timeSec.toFixed(2)} seconds</p>
+          <p>${formatDuration(timeSec)}</p>
+        `;
+        resultsDiv.appendChild(card);
+      });
+      totalDiv.textContent = `Total Time: ${formatDuration(totalSec)}`;
+    }
+
+    domainInput.addEventListener('input', update);
+    trialsInput.addEventListener('input', update);
+    update();
+  </script>
+</body>
+</html>
